@@ -2,7 +2,6 @@
 #include "olcPixelGameEngine\olcPixelGameEngine.h"
 #include "PathFinder.h"
 #include<iostream>
-#include<unordered_set>
 #include<vector>
 #include<math.h>
 #include<time.h>
@@ -10,6 +9,7 @@
 #include<stdlib.h>
 using namespace std;
 
+//Amaraja Part
 Pathfinder::Pathfinder(int GridRows = 0, int GridCols = 0, float ObstaclePopulation = 0.4, int GWidth = 400, int GHeight = 400, int ofs_x = 0, int ofs_y = 100)
 {
 	this->sAppName = "A* PATH FINDING ALGORITHM!";
@@ -21,8 +21,8 @@ Pathfinder::Pathfinder(int GridRows = 0, int GridCols = 0, float ObstaclePopulat
 	this->ofs_x = ofs_x;
 	this->ofs_y = ofs_y;
 	this->PathFound = false;
-	this->flag = 0;
-	this->flag1 = 0;
+	this->flag = 0; // used for menu gui
+	this->flag1 = 0; // used for menu gui
 
 }
 
@@ -33,66 +33,70 @@ Pathfinder::~Pathfinder() {
 	delete[] Grid;
 }
 
-double Pathfinder::Heuristics(node* Neighbour, node* End) {
-		return abs(Neighbour->x - End->x) + abs(Neighbour->y - End->y);
-		//return sqrt(pow(Neighbour->x - End->x, 2) + pow(Neighbour->y - End->y, 2));
-}
+bool Pathfinder::OnUserCreate() {
 
-bool Pathfinder::OnUserCreate(){
-	
-		Grid = new node * [GridRows];
-		for (int i = 0; i < GridRows; i++) {
-			Grid[i] = new node[GridCols];
-		}
-		StartNode = &Grid[0][0];
-		End = &Grid[GridRows - 1][GridCols - 1];
-		
-		for (int i = 0; i < GridRows; i++) {
-			for (int j = 0; j < GridCols; j++) {
-				if (i > 0) {//LEFT NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i - 1][j]);
-					Grid[i][j].neighbours_wd.push_back(&Grid[i - 1][j]);
-					
-				}
-				if (i < GridRows - 1) {//RIGHT NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i + 1][j]);
-					Grid[i][j].neighbours_wd.push_back(&Grid[i + 1][j]);
-				}
-				if (j > 0) {//UPPER NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i][j - 1]);
-					Grid[i][j].neighbours_wd.push_back(&Grid[i][j - 1]);
-				}
-				if (j < GridCols - 1) {//LOWER NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i][j + 1]);
-					Grid[i][j].neighbours_wd.push_back(&Grid[i][j + 1]);
-				}
-				if (i > 0 and j > 0) {//UPPERLEFT NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i - 1][j - 1]);
-				}
-				if (i < GridRows - 1 and j < GridCols - 1) {//LOWERRIGHT NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i + 1][j + 1]);
-				}
-				if (i > 0 and j < GridCols - 1) {//LOWERLEFT NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i - 1][j + 1]);
-				}
-				if (j > 0 and i < GridRows - 1) {//UPPERRIGHT NEIGHBOUR
-					Grid[i][j].neighbours.push_back(&Grid[i + 1][j - 1]);
-				}
+	Grid = new node * [GridRows];
+	for (int i = 0; i < GridRows; i++) {
+		Grid[i] = new node[GridCols];
+	}
+	StartNode = &Grid[0][0];
+	End = &Grid[GridRows - 1][GridCols - 1];
 
-				Grid[i][j].x = i;
-				Grid[i][j].y = j;
+	for (int i = 0; i < GridRows; i++) {
+		for (int j = 0; j < GridCols; j++) {
+			if (i > 0) {//LEFT NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i - 1][j]);
+				Grid[i][j].neighbours_wd.push_back(&Grid[i - 1][j]);
 
-				float RandomPopulation = (float)rand() / RAND_MAX; // random value to be gen
-				cout << RandomPopulation << " " << ObstaclePopulation << endl;
-				if (RandomPopulation < ObstaclePopulation and &Grid[i][j] != StartNode and &Grid[i][j] != End) {
-					Grid[i][j].obstacle = true;
-				}
+			}
+			if (i < GridRows - 1) {//RIGHT NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i + 1][j]);
+				Grid[i][j].neighbours_wd.push_back(&Grid[i + 1][j]);
+			}
+			if (j > 0) {//UPPER NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i][j - 1]);
+				Grid[i][j].neighbours_wd.push_back(&Grid[i][j - 1]);
+			}
+			if (j < GridCols - 1) {//LOWER NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i][j + 1]);
+				Grid[i][j].neighbours_wd.push_back(&Grid[i][j + 1]);
+			}
+			// ADDING DIAGONAL
+			if (i > 0 and j > 0) {//UPPERLEFT NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i - 1][j - 1]);
+			}
+			if (i < GridRows - 1 and j < GridCols - 1) {//LOWERRIGHT NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i + 1][j + 1]);
+			}
+			if (i > 0 and j < GridCols - 1) {//LOWERLEFT NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i - 1][j + 1]);
+			}
+			if (j > 0 and i < GridRows - 1) {//UPPERRIGHT NEIGHBOUR
+				Grid[i][j].neighbours.push_back(&Grid[i + 1][j - 1]);
+			}
+
+			Grid[i][j].x = i;
+			Grid[i][j].y = j;
+
+			float RandomPopulation = (float)rand() / RAND_MAX; // random value to be gen
+			cout << RandomPopulation << " " << ObstaclePopulation << endl;
+			if (RandomPopulation < ObstaclePopulation and &Grid[i][j] != StartNode and &Grid[i][j] != End) {
+				Grid[i][j].obstacle = true;
 			}
 		}
-		FindPath(SolvedPath,PathLength,PathFound,1);
-		FindPath(SolvedPath_wd, PathLength_wd, PathFound_wd, 2);
-		return true;
+	}
+	FindPath(SolvedPath, PathLength, PathFound, 1);
+	FindPath(SolvedPath_wd, PathLength_wd, PathFound_wd, 2);
+	return true;
 
+}
+
+
+//Aaditya  Part
+
+double Pathfinder::Heuristics(node* Neighbour, node* End) {
+		//return abs(Neighbour->x - End->x) + abs(Neighbour->y - End->y);
+		return sqrt(pow(Neighbour->x - End->x, 2) + pow(Neighbour->y - End->y, 2));
 }
 
 void Pathfinder::FindPath(vector<node*>& SP, float& PL, bool& PF, int choice) {
@@ -212,6 +216,7 @@ bool Pathfinder::OnUserUpdate(float fElapsedTime)
 				}
 			}
 		}
+
 		if (flag1 == 1) {
 			PrintPath(SolvedPath, PathLength, olc::CYAN, 3);
 		}
@@ -222,10 +227,14 @@ bool Pathfinder::OnUserUpdate(float fElapsedTime)
 			PrintPath(SolvedPath, PathLength, olc::CYAN, 4);
 			PrintPath(SolvedPath_wd, PathLength_wd, olc::ORANGE, 1.5);
 		}
-		DrawStringDecal(olc::vf2d(2 * ofs_x, 5 * ofs_y / 4 + GHeight), "CREDITS: MADE USING OneLoneCoder.com - Pixel Game Engine", olc::WHITE, olc::vf2d(1.0f, 1.0f));
+
+		DrawStringDecal(olc::vf2d((float)(2 * ofs_x),(float) (5 * ofs_y / 4 + GHeight)), "CREDITS: MADE USING OneLoneCoder.com - Pixel Game Engine", olc::WHITE, olc::vf2d(1.0f, 1.0f));
 
 		return true;
 } 
+
+
+//Saisathish Part
 
 void Pathfinder::PrintPath(vector<node*>& SP, float& PL, olc::Pixel Color,float LW) {
 	int NodeWidth = (GWidth / GridCols);
@@ -269,61 +278,28 @@ void Pathfinder::PrintPath(vector<node*>& SP, float& PL, olc::Pixel Color,float 
 					int x2 = ofs_x + (*itr1)->x * NodeWidth + HalfNW;
 					int y2 = ofs_y + (*itr1)->y * NodeHeight + HalfNH;
 
-					DrawLineDecal(olc::vf2d(x1, y1), olc::vf2d(x2, y2), olc::WHITE);
-					for (float C = 0.1; C < LW/2; C += 0.1) {
-						DrawLineDecal(olc::vf2d(x1 + C, y1 + C), olc::vf2d(x2 + C, y2 + C), Color);
-						DrawLineDecal(olc::vf2d(x1 - C, y1 - C), olc::vf2d(x2 - C, y2 - C), Color);
-						DrawLineDecal(olc::vf2d(x1 + C, y1 + C), olc::vf2d(x2 - C, y2 - C), Color);
-						DrawLineDecal(olc::vf2d(x1 - C, y1 - C), olc::vf2d(x2 + C, y2 + C), Color);
-						DrawLineDecal(olc::vf2d(x1 + C, y1 - C), olc::vf2d(x2 + C, y2 - C), Color);
-						DrawLineDecal(olc::vf2d(x1 - C, y1 + C), olc::vf2d(x2 - C, y2 + C), Color);
-						DrawLineDecal(olc::vf2d(x1 + C, y1 - C), olc::vf2d(x2 - C, y2 + C), Color);
-						DrawLineDecal(olc::vf2d(x1 - C, y1 + C), olc::vf2d(x2 + C, y2 - C), Color);
+					DrawLineDecal(olc::vf2d((float)x1, (float)y1), olc::vf2d((float)x2, (float)y2), olc::WHITE);
+					for (float C = 0.1f; C < LW/2; C =(float)(C + 0.1)) {
+						DrawLineDecal(olc::vf2d((float)(x1 + C), (float)(y1 + C)), olc::vf2d((float)(x2 + C), (float)(y2 + C)), Color);
+						DrawLineDecal(olc::vf2d((float)(x1 - C), (float)(y1 - C)), olc::vf2d((float)(x2 - C), (float)(y2 - C)), Color);
+						DrawLineDecal(olc::vf2d((float)(x1 + C), (float)(y1 + C)), olc::vf2d((float)(x2 - C), (float)(y2 - C)), Color);
+						DrawLineDecal(olc::vf2d((float)(x1 - C), (float)(y1 - C)), olc::vf2d((float)(x2 + C), (float)(y2 + C)), Color);
+						DrawLineDecal(olc::vf2d((float)(x1 + C), (float)(y1 - C)), olc::vf2d((float)(x2 + C), (float)(y2 - C)), Color);
+						DrawLineDecal(olc::vf2d((float)(x1 - C), (float)(y1 + C)), olc::vf2d((float)(x2 - C), (float)(y2 + C)), Color);
+						DrawLineDecal(olc::vf2d((float)(x1 + C), (float)(y1 - C)), olc::vf2d((float)(x2 - C), (float)(y2 + C)), Color);
+						DrawLineDecal(olc::vf2d((float)(x1 - C), (float)(y1 + C)), olc::vf2d((float)(x2 + C), (float)(y2 - C)), Color);
 					}
 
 					if (x1 == x2 or y1 == y2) {
 						PL += 1.0;
 					}
 					else {
-						PL += sqrt(2.0);
+						PL += (float)sqrt(2.0);
 					}
 
 					int C = 5*Correction;
 
-					/*
-					if (x1 > x2) {
-						if (y1 == y2) {
-							FillTriangle(x1, y1, x1 - C, y1 + C, x1 - C, y1 - C, olc::DARK_RED);
-						}
-						else if (y1 < y2) {
-							FillTriangle(x1, y1, x1, y1 + C, x1 - C, y1, olc::DARK_RED);
-						}
-						else {
-							FillTriangle(x1, y1, x1, y1 - C, x1 - C, y1, olc::DARK_RED);
-						}
-					}
-					else if (x1 < x2) {
-						if (y1 < y2) {
-							FillTriangle(x1, y1, x1 , y1 + C , x1 + C , y1 , olc::DARK_RED);
-						}
-						else if (y1 == y2) {
-							FillTriangle(x1, y1, x1 + C, y1 + C , x1 + C , y1 - C , olc::DARK_RED);
-						}
-						else{
-							FillTriangle(x1, y1, x1, y1 - C, x1 + C, y1, olc::DARK_RED);
-						}
-					}
-					else {
-						if (y1 > y2) {
-							FillTriangle(x1, y1, x1 + C, y1 - C, x1 - C, y1 - C, olc::DARK_RED);
-						}
-						else if(y1 < y2) {
-							FillTriangle(x1, y1, x1 - C, y1 + C, x1 + C, y1 + C, olc::DARK_RED);
-						}
-					}
-					*/
 					
-
 
 				}
 
@@ -337,8 +313,8 @@ void Pathfinder::PrintPath(vector<node*>& SP, float& PL, olc::Pixel Color,float 
 
 void Pathfinder::PrintTitleBar() {
 	Clear(olc::DARK_BLUE);
-	DrawStringDecal(olc::vf2d(ofs_x, ofs_y / 6), "SIMULATION OF A* ALGORITHM", olc::WHITE, olc::vf2d(2.5f, 2.5f));
-	DrawStringDecal(olc::vf2d(ofs_x, ofs_y / 2), "PROJECT BY : 1. AADITYA PRABHU K - 2020115001 \n\n\t\t\t 2. AMARAJA VIJAYKUMAR - 2020115008 \n\n\t\t\t 3. SAISATHISH KARTHIKEYAN - 2020115071", olc::WHITE, olc::vf2d(1.0f, 1.0f));
+	DrawStringDecal(olc::vf2d((float)(ofs_x), (float)(ofs_y / 6)), "SIMULATION OF A* ALGORITHM", olc::WHITE, olc::vf2d(2.5f, 2.5f));
+	DrawStringDecal(olc::vf2d((float)(ofs_x), (float)(ofs_y / 2)), "PROJECT BY : 1. AADITYA PRABHU K - 2020115001 \n\n\t\t\t 2. AMARAJA VIJAYKUMAR - 2020115008 \n\n\t\t\t 3. SAISATHISH KARTHIKEYAN - 2020115071", olc::WHITE, olc::vf2d(1.0f, 1.0f));
 
 }
 
@@ -350,23 +326,23 @@ void Pathfinder::PrintMenu() {
 	
 	if (flag == 1) {
 		FillRect(GWidth + 3 * ofs_x / 2 + 1, ofs_y + 1, ofs_x * 2 - 1, ofs_y / 2 - 1, olc::DARK_GREEN);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5, ofs_y + 5), "SELECT POINT\n\nTO CHANGE\n\nTO SOURCE", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5),(float) ( ofs_y + 5)), "SELECT POINT\n\nTO CHANGE\n\nTO SOURCE", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 		FillRect(GWidth + 3 * ofs_x / 2 + C, 2 * ofs_y + C, ofs_x * 2 - C, ofs_y / 2 - C, olc::RED);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 2 * ofs_y + 5 * C), "CLICK HERE\n\nTO CHANGE\n\nDESTINATION", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C), (float)(2 * ofs_y + 5 * C)), "CLICK HERE\n\nTO CHANGE\n\nDESTINATION", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 
 	}
 	else if (flag == 2) {
 		FillRect(GWidth + 3 * ofs_x / 2 + C, ofs_y + C, ofs_x * 2 - C, ofs_y / 2 - C, olc::GREEN);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, ofs_y + 5 * C), "CLICK HERE\n\nTO CHANGE\n\nSOURCE", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C),(float) (ofs_y + 5 * C)), "CLICK HERE\n\nTO CHANGE\n\nSOURCE", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 		FillRect(GWidth + 3 * ofs_x / 2 + 1, 2 * ofs_y + 1, ofs_x * 2 - 1, ofs_y / 2 - 1, olc::DARK_RED);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5, 2 * ofs_y + 5), "SELECT POINT\n\nTO CHANGE TO\n\nDESTINATION", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5),(float) (2 * ofs_y + 5)), "SELECT POINT\n\nTO CHANGE TO\n\nDESTINATION", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 
 	}
 	else {
 		FillRect(GWidth + 3 * ofs_x / 2 + C, ofs_y + C, ofs_x * 2 - C, ofs_y / 2 - C, olc::GREEN);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, ofs_y + 5 * C), "CLICK HERE\n\nTO CHANGE\n\nSOURCE", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C),(float) (ofs_y + 5 * C)), "CLICK HERE\n\nTO CHANGE\n\nSOURCE", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 		FillRect(GWidth + 3 * ofs_x / 2 + C, 2 * ofs_y + C, ofs_x * 2 - C, ofs_y / 2 - C, olc::RED);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2  + 5 * C, 2 * ofs_y + 5 * C), "CLICK HERE\n\nTO CHANGE\n\nDESTINATION", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2  + 5 * C),(float)( 2 * ofs_y + 5 * C)), "CLICK HERE\n\nTO CHANGE\n\nDESTINATION", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 
 	}
 
@@ -377,22 +353,22 @@ void Pathfinder::PrintMenu() {
 
 	if (flag1 == 1) {
 		FillRect(GWidth + 3 * ofs_x / 2 + 1, 7 * ofs_y / 2 + 1, ofs_x * 2 - 1, 2 * ofs_y / 5 - 1, olc::DARK_CYAN);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 7 * ofs_y / 2 + 5 * C), "\nSHOW BOTH \n\n PATHS ", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C), (float)(7 * ofs_y / 2 + 5 * C)), "\nSHOW BOTH \n\n PATHS ", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 		FillRect(GWidth + 3 * ofs_x / 2 + C, 9 * ofs_y / 2 + C, ofs_x * 2 - C, 2 * ofs_y / 5 - C, olc::ORANGE);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 9 * ofs_y / 2 + 5 * C), "SHOW ONLY PATH\n\nW/O DIAGONAL\n\nTRAVERSAL", olc::BLACK, olc::vf2d(0.8f, 0.8f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C), (float)(9 * ofs_y / 2 + 5 * C)), "SHOW ONLY PATH\n\nW/O DIAGONAL\n\nTRAVERSAL", olc::BLACK, olc::vf2d(0.8f, 0.8f));
 	}
 	else if (flag1 == 2) {
-		FillRect(GWidth + 3 * ofs_x / 2 + C, 7 * ofs_y / 2 + C, ofs_x * 2 - C, 2 * ofs_y / 5 - C, olc::CYAN); DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 7 * ofs_y / 2 + 5 * C), "SHOW ONLY PATH \n\nWITH DIAGONAL \n\nTRAVERSAL ", olc::BLACK, olc::vf2d(0.8f, 0.8f));
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 7 * ofs_y / 2 + 5 * C), "SHOW ONLY PATH \n\nWITH DIAGONAL \n\nTRAVERSAL ", olc::BLACK, olc::vf2d(0.8f, 0.8f));
+		FillRect(GWidth + 3 * ofs_x / 2 + C, 7 * ofs_y / 2 + C, ofs_x * 2 - C, 2 * ofs_y / 5 - C, olc::CYAN); 
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C),(float) (7 * ofs_y / 2 + 5 * C)), "SHOW ONLY PATH \n\nWITH DIAGONAL \n\nTRAVERSAL ", olc::BLACK, olc::vf2d(0.8f, 0.8f));
 		FillRect(GWidth + 3 * ofs_x / 2 + 1, 9 * ofs_y / 2 + 1, ofs_x * 2 - 1, 2 * ofs_y / 5 - 1, olc::DARK_ORANGE);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 9 * ofs_y / 2 + 5 * C), "\nSHOW BOTH\n\n PATHS ", olc::BLACK, olc::vf2d(1.0f, 1.0f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C),(float) (9 * ofs_y / 2 + 5 * C)), "\nSHOW BOTH\n\n PATHS ", olc::BLACK, olc::vf2d(1.0f, 1.0f));
 
 	}
 	else {
 		FillRect(GWidth + 3 * ofs_x / 2 + C, 7 * ofs_y / 2 + C, ofs_x * 2 - C, 2 * ofs_y / 5 - C, olc::CYAN);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 7 * ofs_y / 2 + 5 * C), "SHOW ONLY PATH \n\nWITH DIAGONAL \n\nTRAVERSAL ", olc::BLACK, olc::vf2d(0.8f, 0.8f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C), (float)(7 * ofs_y / 2 + 5 * C)), "SHOW ONLY PATH \n\nWITH DIAGONAL \n\nTRAVERSAL ", olc::BLACK, olc::vf2d(0.8f, 0.8f));
 		FillRect(GWidth + 3 * ofs_x / 2 + C, 9 * ofs_y / 2 + C, ofs_x * 2 - C, 2 * ofs_y / 5 - C, olc::ORANGE);
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2 + 5 * C, 9 * ofs_y / 2 + 5 * C), "SHOW ONLY PATH\n\nW/O DIAGONAL\n\nTRAVERSAL", olc::BLACK, olc::vf2d(0.8f, 0.8f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2 + 5 * C),(float) (9 * ofs_y / 2 + 5 * C)), "SHOW ONLY PATH\n\nW/O DIAGONAL\n\nTRAVERSAL", olc::BLACK, olc::vf2d(0.8f, 0.8f));
 
 	}
 
@@ -464,17 +440,17 @@ void Pathfinder::PrintMenu() {
 	
 	if (PathFound) {
 		string str ="SHORTEST PATH FOUND\n\nWITH\n\nDIAGONAL TRAVERSAL\n\nDistance : ";
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2, 3 * ofs_y ), str + to_string(PathLength), olc::GREEN, olc::vf2d(0.8f, 0.8f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2), (float)(3 * ofs_y) ), str + to_string(PathLength), olc::GREEN, olc::vf2d(0.8f, 0.8f));
 	}
 	else {
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2, 3 * ofs_y ), "PATH NOT FOUND\n\nWITH\n\nDIAGONAL TRAVERSAL", olc::RED, olc::vf2d(0.8f, 0.8f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2),(float) (3 * ofs_y) ), "PATH NOT FOUND\n\nWITH\n\nDIAGONAL TRAVERSAL", olc::RED, olc::vf2d(0.8f, 0.8f));
 	}
 	if (PathFound_wd) {
 		string str = "SHORTEST PATH FOUND\n\nWITHOUT\n\nDIAGONAL TRAVERSAL\n\nDistance : ";
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2, 4 * ofs_y ), str + to_string(PathLength_wd), olc::GREEN, olc::vf2d(0.8f, 0.8f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2), (float)(4 * ofs_y)), str + to_string(PathLength_wd), olc::GREEN, olc::vf2d(0.8f, 0.8f));
 	}
 	else {
-		DrawStringDecal(olc::vf2d(GWidth + 3 * ofs_x / 2, 4 * ofs_y ), "PATH NOT FOUND\n\nWITHOUT\n\nDIAGONAL TRAVERSAL!", olc::RED, olc::vf2d(0.8f, 0.8f));
+		DrawStringDecal(olc::vf2d((float)(GWidth + 3 * ofs_x / 2),(float) (4 * ofs_y) ), "PATH NOT FOUND\n\nWITHOUT\n\nDIAGONAL TRAVERSAL!", olc::RED, olc::vf2d(0.8f, 0.8f));
 	
 	}
 
